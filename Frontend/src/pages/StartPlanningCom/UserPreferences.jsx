@@ -1,6 +1,6 @@
 /** @format */
 
-import React from "react";
+import React, { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
@@ -46,6 +46,9 @@ import {
 } from "lucide-react";
 
 
+import { sendUserPreferences } from "@/services/api";
+
+
 
 const formSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters." }),
@@ -54,8 +57,8 @@ const formSchema = z.object({
     message: "Please enter a valid age.",
   }),
 
-  state: z.string().min(1, { message: "Please select your state." }),
-  country: z.string().min(1, { message: "Please enter your country." }),
+  travelState: z.string().min(1, { message: "Please select your state." }),
+  travelCountry: z.string().min(1, { message: "Please enter your country." }),
 
   gender: z.enum(["male", "female", "other"], {
     required_error: "Please select your gender.",
@@ -81,13 +84,13 @@ const formSchema = z.object({
     message: "Please enter a valid number of people.",
   }),
 
-  tripType: z.enum(["family", "alone", "friends", "school", "college", "other"], {
+  tripType: z.enum(["family", "alone", "friends", "school", "college", "other", "couple", "corporate"], {
     required_error: "Please select your trip type.",
   }),
 
   restType: z.string().min(1, { message: "Please enter your hotel preferences." }),
 
-  travelType: z.enum(["personal", "flight", "train", "bus", "cruise"], {
+  travelType: z.enum(["personal", "flights", "train", "bus", "cruise", "mix"], {
     required_error: "Please select your travel type.",
   }),
 
@@ -114,7 +117,12 @@ const formSchema = z.object({
 
 
 
-const UserPreferences = ({ onSubmit }) => {
+
+
+
+const UserPreferences = ({ onSubmit, setFoundMajorPlaces, setPlanId }) => {
+
+
 
 
 
@@ -124,8 +132,8 @@ const UserPreferences = ({ onSubmit }) => {
     defaultValues: {
       name: "",
       age: "",
-      state: "",
-      country: "",
+      travel_state: "",
+      travel_country: "",
       gender: undefined,
       religion: undefined,
       travelDuration: {
@@ -147,11 +155,29 @@ const UserPreferences = ({ onSubmit }) => {
   });
   
 
-  const handleSubmit = (data) => {
-    console.log("Form data:", data);
-    onSubmit(data);
-  };
+    const handleSubmit = async (data) => {
 
+      "Step 1 - Sendng user preferecne..."
+      console.log("Form data:", data);
+      try {
+        const resData = await sendUserPreferences(data)
+
+      
+
+        setFoundMajorPlaces(resData.places)
+        setPlanId(resData.plan_id)
+        
+      } catch (error) {
+        console.error("While Sending User Preferences to backend", error);
+        
+      }
+      onSubmit(data);
+      console.log("Step 1 - Sending Done---");
+      
+    };
+
+
+  
   return (
     <div className="max-w-3xl mx-auto">
       <Card>
@@ -202,14 +228,14 @@ const UserPreferences = ({ onSubmit }) => {
 
                 <FormField
                   control={form.control}
-                  name="state"
+                  name="travelState"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="flex items-center gap-2">
-                        <MapPin className="h-4 w-4" /> State (Living)
+                        <MapPin className="h-4 w-4" />travel State
                       </FormLabel>
                       <FormControl>
-                        <Input placeholder="Your state" {...field} />
+                        <Input placeholder="travel state" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -218,12 +244,12 @@ const UserPreferences = ({ onSubmit }) => {
 
                 <FormField
                   control={form.control}
-                  name="country"
+                  name="travelCountry"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Country</FormLabel>
+                      <FormLabel>travel Country</FormLabel>
                       <FormControl>
-                        <Input placeholder="Your country" {...field} />
+                        <Input placeholder="travel country" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -578,8 +604,8 @@ const UserPreferences = ({ onSubmit }) => {
                           <SelectItem value="alone">Solo</SelectItem>
                           <SelectItem value="friends">Friends</SelectItem>
                           <SelectItem value="school">School or College</SelectItem>
-                          <SelectItem value="school">Couple</SelectItem>
-                          <SelectItem value="school">Corporate</SelectItem>
+                          <SelectItem value="couple">Couple</SelectItem>
+                          <SelectItem value="corporate">Corporate</SelectItem>
                         </SelectContent>
                       </Select>
                       <FormMessage />
@@ -630,7 +656,7 @@ const UserPreferences = ({ onSubmit }) => {
                           </SelectItem>
                           <SelectItem value="flights">
                             <div className="flex items-center gap-2">
-                              <Plane className="h-4 w-4" /> Start-End-Flights
+                              <Plane className="h-4 w-4" /> Start-End Flights
                             </div>
                           </SelectItem>
                           <SelectItem value="train">
@@ -660,6 +686,8 @@ const UserPreferences = ({ onSubmit }) => {
                   )}
                 />
 
+
+                {/* Food Type  */}
                 <FormField
                   control={form.control}
                   name="foodType"
@@ -706,6 +734,8 @@ const UserPreferences = ({ onSubmit }) => {
                 />
               </div>
 
+
+                  {/* Budget Range  */}
               <FormField
                 control={form.control}
                 name="budget"
@@ -847,6 +877,7 @@ const UserPreferences = ({ onSubmit }) => {
                 )}
               />
 
+                {/* Special Choices */}
               <FormField
                 control={form.control}
                 name="specialChoices"
@@ -866,6 +897,8 @@ const UserPreferences = ({ onSubmit }) => {
                   </FormItem>
                 )}
               />
+
+
                 
                 <div className="flex justify-end">
                 <Button 
@@ -874,7 +907,7 @@ const UserPreferences = ({ onSubmit }) => {
                 >
                   Find Destinations <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
-              </div>
+                </div>
             </form>
           </Form>
         </CardContent>

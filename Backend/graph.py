@@ -3,7 +3,8 @@ from langgraph.graph import StateGraph
 from node.extract_preferences import extract_preferences, validate_preferences
 from node.find_major_places import suggest_major_places
 from node.generate_itinerary import generate_itinerary
-from node.follow_up_time import follow_up_time
+from node.graph_end import ending
+
 
 # graph definition with input type
 travel_graph = StateGraph(AgentState)
@@ -29,11 +30,11 @@ travel_planner_graph = travel_graph.compile()
 
 
 travel_graph_2.add_node("generate_itinerary", generate_itinerary)
-travel_graph_2.add_node("follow_up_time", follow_up_time)
+travel_graph_2.add_node("ending", ending)
 
 travel_graph_2.set_entry_point("generate_itinerary")
-travel_graph_2.add_edge("generate_itinerary", "follow_up_time")
-travel_graph_2.set_finish_point("follow_up_time")
+travel_graph_2.add_edge("generate_itinerary", "ending")
+travel_graph_2.set_finish_point("ending")
 
 travel_planner_graph_2 = travel_graph_2.compile()
 

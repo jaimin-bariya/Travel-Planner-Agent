@@ -83,11 +83,6 @@ class ResumeRequest(BaseModel):
 
 
 
-    
-
-
-
-
 @app.get("/")
 def helloJP():
     return {"msg": "Hello JP bro, B is live now"}
@@ -167,7 +162,7 @@ async def make_itinerary(resume: ResumeRequest):
         "selected_places": paused_state['user_selected_places'],
         "MSG2": result_state['is_paused'],
         "itinerary": result_state.get('itinerary', {}),
-        # "history": final_state.get("history", [])
+        
 
     }
 

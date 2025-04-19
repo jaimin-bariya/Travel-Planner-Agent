@@ -286,7 +286,7 @@ const Itinerary = ({ preferences, destinations, onItineraryGenerated, setItinera
                                   <span className="text-gray-600">Photos:</span> {activity?.photo}
                                 </p>
                                 <p className="flex items-center gap-2 mb-2">
-                                  <DollarSign className="h-4 w-4 text-gray-500" />
+                                  <p className="h-4 w-4 text-gray-500" >₹</p>
                                   <span className="text-gray-600">Entry:</span> {activity?.entry}
                                 </p>
                               </div>
@@ -305,7 +305,7 @@ const Itinerary = ({ preferences, destinations, onItineraryGenerated, setItinera
                     <div className="mt-6 p-4 bg-gray-50 rounded-lg">
                       <div className="flex items-center justify-between">
                         <div className="text-right">
-                          <p className="font-medium">Daily Budget: ${itinerary?.summary?.plan_table[index]?.one_day_cost}</p>
+                          <p className="font-medium">Daily Budget: ₹{itinerary?.summary?.plan_table[index]?.one_day_cost}</p>
 
                         </div>
                         <div className="text-right">

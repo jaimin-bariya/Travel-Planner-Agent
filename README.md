@@ -35,6 +35,7 @@ cd travel-planner-ai
 ```
 cd Travel-Planner-Agent/
 cd backend
+pip install -r requirements.txt
 uvicorn main:app --reload
 ```
 

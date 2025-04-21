@@ -48,9 +48,12 @@ prompt = PromptTemplate(
 
 def get_list_of_places(response):
     try:
-        return json.loads(response.content)
-    except json.JSONDecodeError:
-        print("Error decoding JSON")
+        data = json.loads(response.content)
+        if not isinstance(data, list):
+            raise ValueError("Response is not a list")
+        return data
+    except Exception as e:
+        print(f"Error parsing response: {e}\nResponse: {response.content}")
         return []
 
 
@@ -64,6 +67,8 @@ def get_in_table_format(placesList):
 
 
 def suggest_major_places(state: AgentState) -> AgentState:
+
+    print(f"Entering suggest_major_places with state: {state}")
 
     preferences = state['preferences']
     
@@ -84,7 +89,9 @@ def suggest_major_places(state: AgentState) -> AgentState:
     print(get_in_table_format(placesList=places))
 
     state['suggested_places'] = places
-    state['is_paused'] = True
+    # state['is_paused'] = True
+
+    print(f"Exit  suggest_major_places with state")
 
     return state
 
@@ -92,9 +99,8 @@ def suggest_major_places(state: AgentState) -> AgentState:
 
 
 def pause_node(state: AgentState):
-
-    
-    if not state.get("is_paused", False):
-        return state
-
+    print(f"⏸️ Pause node - current is_paused: {state['is_paused']}, next: {state.get('next', "Nothing")}")
+    state['is_paused'] = True
+    state['next'] = "generate_itinerary"
+    print(f"⏸️ Pause node - new is_paused: {state['is_paused']}, next: {state['next']}")
     return state

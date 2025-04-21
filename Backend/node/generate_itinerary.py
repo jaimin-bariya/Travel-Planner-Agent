@@ -168,6 +168,8 @@ def generate_itinerary(state: AgentState):
     state['itinerary'] = answer
     
 
+    print(f"Node 3 - Itinerary Generated:")
+
     return state
 
 

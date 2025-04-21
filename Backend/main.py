@@ -2,7 +2,7 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import uuid
-from graph import travel_planner_graph, travel_planner_graph_2
+from graph import travel_planner_graph
 
 app = FastAPI()
 
@@ -105,14 +105,15 @@ async def collect_preferences(pref: Preferences):
 
     }
 
-    print(pref)
-
+    
+    
+    # print("Initial state:", agent_state)  # Before graph execution
     result_state = travel_planner_graph.invoke(agent_state)
+    # print("Result state:", result_state)  # After graph execution
 
 
     
     
- 
     
     places = result_state.get("suggested_places", [])
     
@@ -150,17 +151,35 @@ async def make_itinerary(resume: ResumeRequest):
     paused_state = session_store[resume.plan_id]
 
 
+    
+
+
+
+
+
     paused_state['user_selected_places'] = [p.as_dict() for p in resume.selected_places]
     
 
-    result_state = travel_planner_graph_2.invoke(paused_state)
+    print("PS",paused_state)
+    
+
+    resume_state = {
+        **paused_state,
+        "is_paused": False,
+        "__next__": "generate_itinerary",
+        "__last_node__": "pause_node"
+    }
+
+    print("RS", resume_state)
 
 
+    result_state = travel_planner_graph.invoke(resume_state)
+    
 
     return {
         "msg": "Itinerary created!",
-        "selected_places": paused_state['user_selected_places'],
-        "MSG2": result_state['is_paused'],
+        "state": result_state['is_paused'],
+        "selected_places": result_state['user_selected_places'],
         "itinerary": result_state.get('itinerary', {}),
         
 

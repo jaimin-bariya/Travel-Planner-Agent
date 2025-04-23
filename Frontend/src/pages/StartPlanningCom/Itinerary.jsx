@@ -305,8 +305,11 @@ const Itinerary = ({ preferences, destinations, onItineraryGenerated, setItinera
                     <div className="mt-6 p-4 bg-gray-50 rounded-lg">
                       <div className="flex items-center justify-between">
                         <div className="text-right">
-                          <p className="font-medium">Daily Budget: ₹{itinerary?.summary?.plan_table[index]?.one_day_cost}</p>
-
+                        <p className="font-medium">
+  Daily Budget: {itinerary?.summary?.plan_table?.[index]?.one_day_cost
+    ? `₹${itinerary.summary.plan_table[index].one_day_cost}`
+    : "Not available"}
+</p>
                         </div>
                         <div className="text-right">
                           <p className="text-sm text-gray-500">{day?.tips}</p>

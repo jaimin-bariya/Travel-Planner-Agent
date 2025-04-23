@@ -16,13 +16,15 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 
+import { followUp } from '@/services/api';
 
 
-const FollowUpQuestions = ({ preferences, destinations, itinerary }) => {
+
+const FollowUpQuestions = ({destinations, itinerary, setItinerary, planId}) => {
     const [messages, setMessages] = useState([
       {
         id: '1',
-        content: `Your travel itinerary is ready! It includes ${destinations.length} destinations over ${itinerary.totalDays} days. Is there anything you'd like to change or any questions you have about your plan?`,
+        content: `Your travel itinerary is ready! It includes ${destinations.length} destinations over ${itinerary.summary.total_days} days. Is there anything you'd like to change or any questions you have about your plan?`,
         sender: 'assistant',
         timestamp: new Date()
       }
@@ -35,12 +37,16 @@ const FollowUpQuestions = ({ preferences, destinations, itinerary }) => {
     const scrollToBottom = () => {
       messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     };
+
+    
   
     useEffect(() => {
       scrollToBottom();
+      console.log(messages);
+      
     }, [messages]);
   
-    const handleSendMessage = () => {
+    const handleSendMessage = async () => {
       if (!newMessage.trim()) return;
   
       // Add user message
@@ -51,9 +57,15 @@ const FollowUpQuestions = ({ preferences, destinations, itinerary }) => {
         timestamp: new Date()
       };
       
+
       setMessages(prevMessages => [...prevMessages, userMessage]);
-      setNewMessage('');
-  
+      
+
+
+      
+      
+
+      
       // Simulate assistant response
       setTimeout(() => {
         let responseContent = '';
@@ -61,34 +73,38 @@ const FollowUpQuestions = ({ preferences, destinations, itinerary }) => {
         // Simple keyword matching for demonstration
         const lowercaseMessage = newMessage.toLowerCase();
         
-        if (lowercaseMessage.includes('hotel') || lowercaseMessage.includes('accommodation')) {
-          responseContent = "I can definitely help with accommodation changes. You can choose from luxury hotels, budget-friendly options, or local homestays. Would you like me to suggest specific hotels for any of your destinations?";
-        } else if (lowercaseMessage.includes('food') || lowercaseMessage.includes('restaurant') || lowercaseMessage.includes('meal')) {
-          responseContent = "Regarding food options, I can adjust your meal plan to include more local cuisine or specific dietary preferences. Would you like recommendations for restaurants with vegetarian, halal, or other specific options?";
-        } else if (lowercaseMessage.includes('budget') || lowercaseMessage.includes('cost') || lowercaseMessage.includes('expensive')) {
-          responseContent = "I understand budget considerations are important. The current total cost is around $" + itinerary.totalCost + ". I can suggest ways to reduce costs like choosing different accommodations or adjusting activities. What's your target budget?";
-        } else if (lowercaseMessage.includes('time') || lowercaseMessage.includes('days') || lowercaseMessage.includes('duration')) {
-          responseContent = "I can adjust the duration of your trip. Currently, it's planned for " + itinerary.totalDays + " days. Would you like to make it shorter or longer? I can reorganize the itinerary accordingly.";
-        } else if (lowercaseMessage.includes('transport') || lowercaseMessage.includes('travel') || lowercaseMessage.includes('flight')) {
-          responseContent = "For transportation, I can adjust your travel options between destinations. Would you prefer more flights for efficiency or more train/bus travel to enjoy the scenery and reduce costs?";
-        } else if (lowercaseMessage.includes('activity') || lowercaseMessage.includes('attraction') || lowercaseMessage.includes('visit')) {
-          responseContent = "I can modify the activities in your itinerary. Would you like more cultural experiences, outdoor adventures, or relaxation time? Let me know your preferences and I'll adjust accordingly.";
-        } else if (lowercaseMessage.includes('done') || lowercaseMessage.includes('finish') || lowercaseMessage.includes('complete')) {
-          responseContent = "Great! I'm glad you're happy with the itinerary. Would you mind rating your experience with our planning service? Your feedback helps us improve.";
-          setShowRating(true);
-        } else {
-          responseContent = "Thank you for your message. I'll help adjust your itinerary based on your feedback. Could you provide more specific details about what you'd like to change or any questions you have about the plan?";
-        }
-  
+        
+          responseContent = "Thank you for your message. I'll help adjust your itinerary based on your feedback.";
+        
+        
         const assistantMessage = {
           id: (Date.now() + 1).toString(),
           content: responseContent,
           sender: 'assistant',
           timestamp: new Date()
         };
+
+        
+
+        
+  
         
         setMessages(prevMessages => [...prevMessages, assistantMessage]);
       }, 1000);
+
+
+      const tempMSG = newMessage
+
+      setNewMessage('');
+
+      const newplan = await followUp(tempMSG, planId)
+      
+      console.log(newplan);
+
+      setItinerary(newplan?.itinerary)
+      
+
+      
     };
   
     const handleKeyPress = (e) => {
@@ -139,7 +155,7 @@ const FollowUpQuestions = ({ preferences, destinations, itinerary }) => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="bg-gray-50 rounded-lg p-4 mb-4 h-96 overflow-y-auto">
+              <div className="bg-gray-50 rounded-lg p-4 mb-4 h-96 overflow-y-auto ">
                 {messages.map((message) => (
                   <div 
                     key={message.id} 
@@ -155,7 +171,7 @@ const FollowUpQuestions = ({ preferences, destinations, itinerary }) => {
                       <div 
                         className={`w-8 h-8 rounded-full flex items-center justify-center ${
                           message.sender === 'user' 
-                            ? 'bg-travel-600 text-white' 
+                            ? 'bg-teal-800 text-white' 
                             : 'bg-gray-200 text-gray-600'
                         }`}
                       >
@@ -164,7 +180,7 @@ const FollowUpQuestions = ({ preferences, destinations, itinerary }) => {
                       <div 
                         className={`p-3 rounded-lg ${
                           message.sender === 'user' 
-                            ? 'bg-travel-600 text-white' 
+                            ? 'bg-teal-800 text-white' 
                             : 'bg-white border text-gray-800'
                         }`}
                       >

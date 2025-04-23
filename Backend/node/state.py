@@ -1,8 +1,8 @@
 from typing import TypedDict, Dict, List, Any, Optional
+from langgraph.graph import MessagesState
 
 
-
-class AgentState(TypedDict):
+class AgentState(MessagesState):
     preferences: Dict[str, Any]
     suggested_places: List[Dict[str, Any]]
     user_selected_places: List[Dict[str, Any]]

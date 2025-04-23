@@ -15,11 +15,11 @@ llm = ChatGroq(
 from langchain.prompts import PromptTemplate
 
 prompt = PromptTemplate(
-    input_variables=["preferences", "Majorplaces"],
+    input_variables=["preferences", "Majorplaces", "userWish"],
     template="""
 You are a smart travel planner agent.
 
-Your job is to generate a detailed travel itinerary using the **user preferences** and **major places**.
+Your job is to generate or update a detailed travel itinerary using the **user preferences**, **major places**, and any **change request** the user mentions.
 
 ---
 
@@ -31,14 +31,48 @@ Your job is to generate a detailed travel itinerary using the **user preferences
 
 ---
 
+
+USER WANT THIS 
+
+- User Message for change = {userWish}
+
+
+
 📥 INPUTS:
 
 - preferences: {preferences}
 - major places: {Majorplaces}
+- user request/change: {userWish}
 
 ---
 
-🎯 FORMAT EXAMPLE:
+
+
+🧠 LOGIC:
+
+1. If the user request mentions changes (like "change", "update", "modify", "regenerate"), then use the input as a **change request**.
+2. Adjust ONLY the necessary parts (like meals, day plan, city, activities) based on the request.
+3. DO NOT remove all other parts unless the user wants a full reset.
+4. If the user request is empty or neutral, generate the itinerary normally.
+5. Do not repeat same places or meals in different days.
+6. Follow the logic rules:
+
+--- TRAVEL LOGIC TO FOLLOW:
+
+- Religion = hindu → include temples. Muslim → mosques. Christian → churches.
+- If religion is mulslim then don't choose temple or Hindu related places and vice-verca
+- foodType = nonveg → suggest non-veg food, every day food should be different
+- tripType = family → avoid clubs, suggest peaceful/cultural experiences.
+- tripType = Couple -> Suggest club, couple places
+- Use `budget` from preferences to adjust estimated costs.
+- If budget is high -> Add more paid activities like sky dying, etc 
+- If tags like "culture" exist → include cultural shows, museums, etc.
+- shoppingInterest = luxurybrands → include premium malls or markets.
+
+---
+
+🎯 OUTPUT FORMAT (Strictly):
+
 
 {{
 "summary": {{
@@ -83,23 +117,7 @@ Your job is to generate a detailed travel itinerary using the **user preferences
 ]
 }}
 
----
 
-🧠 LOGIC RULES TO FOLLOW:
-
-- Everyday places should be differnet and Unique
-- Religion = hindu → include temples. Muslim → mosques. Christian → churches.
-- If religion is mulslim then don't choose temple or Hindu related places and vice-verca
-- foodType = nonveg → suggest non-veg food, every day food should be different
-- tripType = family → avoid clubs, suggest peaceful/cultural experiences.
-- tripType = Couple -> Suggest club, couple places
-- Use `budget` from preferences to adjust estimated costs.
-- If budget is high -> Add more paid activities like sky dying, etc 
-- If tags like "culture" exist → include cultural shows, museums, etc.
-- Suggest Activites according to tags
-- shoppingInterest = luxurybrands → include premium malls or markets.
-
----
 
 RETURN ONLY THE PYTHON DICT. DO NOT SAY ANYTHING ELSE. THE OUTPUT MUST BE CLEAN.
 """
@@ -118,57 +136,61 @@ def get_in_proper_format(response):
 
 def print_all_tables(properFormat):
 
-    print("\n📅 Plan Table:\n")
-    table_data = [ [d['day'], d['date'], d['state'], d['city'], ", ".join(d['places']), d['one_day_cost']] for d in properFormat['summary']['plan_table'] ]
-    print(tabulate(table_data, headers=["Day", "Date", "State", "City", "Places", "Cost"], tablefmt="fancy_grid"))
+    try:
+        print("\n📅 Plan Table:\n")
+        table_data = [ [d['day'], d['date'], d['state'], d['city'], ", ".join(d['places']), d['one_day_cost']] for d in properFormat['summary']['plan_table'] ]
+        print(tabulate(table_data, headers=["Day", "Date", "State", "City", "Places", "Cost"], tablefmt="fancy_grid"))
 
 
-    print("\n📝 Detailed Itinerary:\n")
-    detailed_table =  [
-        [
-            d['day'],
-            d['date'],
-            d['heading'],
-            f"🍳 {d['meal_plan']['breakfast']}, 🍱 {d['meal_plan']['lunch']}, 🍽 {d['meal_plan']['dinner']}",
-            d['activities'][0]['main_attraction'],
-            d['tips']
+        print("\n📝 Detailed Itinerary:\n")
+        detailed_table =  [
+            [
+                d['day'],
+                d['date'],
+                d['heading'],
+                f"🍳 {d['meal_plan']['breakfast']}, 🍱 {d['meal_plan']['lunch']}, 🍽 {d['meal_plan']['dinner']}",
+                d['activities'][0]['main_attraction'],
+                d['tips']
+            ]
+                for d in properFormat['detailed_plan']
         ]
-            for d in properFormat['detailed_plan']
-    ]
 
-    print(tabulate(detailed_table, headers=["Day", "Date", "Heading", "Meal Plan", "Main Attraction", "Tips"], tablefmt="fancy_grid"))
+        print(tabulate(detailed_table, headers=["Day", "Date", "Heading", "Meal Plan", "Main Attraction", "Tips"], tablefmt="fancy_grid"))
 
+    except:
+        print("Error decoding JSON")
+        
 
 
 
 def generate_itinerary(state: AgentState):
 
     selected_places = state['user_selected_places']
-
+    user_wish = state['messages'][-1].content if state['messages'] else ""
     preferences = state['preferences']
 
 
     formatted_prompt = prompt.format(
         preferences = preferences,
-        Majorplaces = selected_places
+        Majorplaces = selected_places,
+        userWish = user_wish
     )
 
     response = llm.invoke(formatted_prompt)
 
     answer = get_in_proper_format(response=response)
 
-    print("\n\n\n", answer['summary'] , "\n\n\n" )
-    print("\n\n\n", answer['detailed_plan'] , "\n\n\n" )
+    
 
 
-    print_all_tables(answer)
+    
 
 
 
     state['itinerary'] = answer
     
 
-    print(f"Node 3 - Itinerary Generated:")
+    print(f"Node 4 Exit - Itinerary Generated:")
 
     return state
 

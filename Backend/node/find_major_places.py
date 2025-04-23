@@ -68,7 +68,9 @@ def get_in_table_format(placesList):
 
 def suggest_major_places(state: AgentState) -> AgentState:
 
-    print(f"Entering suggest_major_places with state: {state}")
+
+    print(f"Node 3 ENTER - Suggest Major Places")
+    
 
     preferences = state['preferences']
     
@@ -86,12 +88,11 @@ def suggest_major_places(state: AgentState) -> AgentState:
     places = get_list_of_places(response=response)
 
     
-    print(get_in_table_format(placesList=places))
 
     state['suggested_places'] = places
     # state['is_paused'] = True
 
-    print(f"Exit  suggest_major_places with state")
+    print(f"Node 3 EXIT - Suggest Major Places")
 
     return state
 
@@ -100,7 +101,15 @@ def suggest_major_places(state: AgentState) -> AgentState:
 
 def pause_node(state: AgentState):
     print(f"⏸️ Pause node - current is_paused: {state['is_paused']}, next: {state.get('next', "Nothing")}")
+
+
+    if state.get("__next__"):
+        print("something in next", state['is_paused'], state.get('__next__', "None"))
+        return {**state, "is_paused": False}
+    
+
     state['is_paused'] = True
-    state['next'] = "generate_itinerary"
-    print(f"⏸️ Pause node - new is_paused: {state['is_paused']}, next: {state['next']}")
+    # state['next'] = "generate_itinerary"
+    
+    print(f"⏸️ Pause node - new is_paused: {state['is_paused']},  next: {state.get('next', "Nothing")}")
     return state

@@ -21,7 +21,7 @@ def validate_preferences(state: AgentState) -> AgentState:
 
     preferences = state["preferences"]
     
-    required_keys = ["age", "travelState", "travelCountry", "travelDuration", "tags", "numberOfPeople", "tripType", "restType", "travelType", "foodType", "budget", "shoppingInterest"]
+    required_keys = ["age", "travelState", "travelCountry", "travelDuration", "tags", "numberOfPeople", "tripType", "restType", "travelType", "foodType", "budget"]
 
     missing = [key for key in required_keys if key not in preferences or not preferences[key]]
 

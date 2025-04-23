@@ -12,7 +12,7 @@ import { UserPreferences, Destinations, Itinerary, FollowUpQuestions } from "@/p
 const StartPlanning = () => {
   
   const [userPreferences, setUserPreferences] = useState({});
-  const [planId, setPlanId] = useState("");
+  const [planId, setPlanId] = useState("None");
   const [foundMajorPlaces, setFoundMajorPlaces] = useState([]);
   const [selectedDestinations, setSelectedDestinations] = useState([]);
   const [itinerary, setItinerary] = useState({});
@@ -177,6 +177,8 @@ const StartPlanning = () => {
                   preferences={userPreferences}
                   destinations={selectedDestinations}
                   itinerary={itinerary}
+                  setItinerary={setItinerary}
+                  planId={planId}
                 />
 
               )}

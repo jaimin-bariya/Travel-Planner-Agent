@@ -40,7 +40,6 @@ export const makeItinerary = async (selected_places, planId) => {
         timeRequired: place.timeRequired
       }));
 
-    console.log(formattedPlaces);
     
       
     const res = await API.post("/make_itinerary", {
@@ -55,4 +54,24 @@ export const makeItinerary = async (selected_places, planId) => {
     console.log("Use selected Places sent:", res.data);
     return res.data
     
+}
+
+
+
+// Sending user message - Follow-up conversations
+export const followUp = async (userMSG, planId) => {
+
+    console.log("User msg sending.............", userMSG);
+
+    console.log(typeof(userMSG));
+    console.log(typeof(planId));
+    
+
+    const res = await API.post("/conversation_chat", {plan_id: planId, user_message: userMSG})
+
+    console.log("User msg sent...................");
+    
+    
+
+    return res.data
 }
